@@ -1,44 +1,48 @@
 # Arkora
 
-Arkora is a production-ready backend foundation for an advanced knowledge-management platform inspired by the concept in `concept.md`.
+Arkora now includes:
 
-This implementation focuses on clean architecture, extensible domain modeling, and a practical API surface that supports:
+- A **FastAPI backend** implementing the concept's core domain (vaults, projects, templates, content, search)
+- A **Next.js frontend console** for viewing platform stats and running semantic search
 
-- Local-first friendly data structures (vaults/workspaces)
-- Project organization and taxonomy-ready metadata
-- User-defined content templates (custom objects)
-- Structured content items with flexible metadata
-- Semantic-style search over knowledge content
-
-## Stack
-
-- **FastAPI** for the HTTP API
-- **SQLAlchemy 2.x** for persistence
-- **SQLite** by default (easy local setup)
-- **Pytest** + FastAPI TestClient for integration testing
-
-## Project Structure
+## Monorepo Structure
 
 ```text
-app/
+app/                      # Backend source (FastAPI)
   api/
-    deps.py
-    routes.py
   core/
-    config.py
-    database.py
   services/
-    knowledge_service.py
   utils/
-    text.py
   main.py
   models.py
   schemas.py
-tests/
-  test_api.py
+frontend/                 # Frontend source (Next.js + React)
+  src/
+    app/
+    components/
+    lib/
+requirements.txt          # Backend dependencies
+tests/                    # Backend tests
+concept.md                # Product concept
 ```
 
-## Quick Start
+---
+
+## Backend (FastAPI)
+
+### Features
+
+- Layered architecture (`core`, `api`, `services`, `utils`)
+- SQLAlchemy models for:
+  - `Vault`
+  - `Project`
+  - `ContentTemplate`
+  - `ContentItem`
+- Validated Pydantic request/response schemas
+- REST API routes for create/list flows
+- Semantic-style search using tokenization + cosine similarity
+
+### Backend Quick Start
 
 ```bash
 python -m venv .venv
@@ -52,7 +56,7 @@ API docs:
 - Swagger UI: `http://127.0.0.1:8000/docs`
 - ReDoc: `http://127.0.0.1:8000/redoc`
 
-## Environment Configuration
+### Backend Environment Configuration
 
 Optional `.env`:
 
@@ -62,7 +66,7 @@ APP_VERSION=0.1.0
 DATABASE_URL=sqlite:///./arkora.db
 ```
 
-## API Overview
+### Backend API Overview
 
 Base path: `/api/v1`
 
@@ -73,32 +77,55 @@ Base path: `/api/v1`
 - `POST /content`, `GET /content?project_id=...`
 - `GET /search?q=...&limit=10`
 
-## Design Notes
+---
 
-- **Service layer pattern** keeps route handlers thin and business logic centralized.
-- **Pydantic schemas** enforce request/response validation and API contract clarity.
-- **Unique constraints** protect data consistency (e.g., project slug uniqueness per vault).
-- **Search utility** currently uses tokenized cosine similarity and can be swapped for true embedding/vector backends later without changing API contracts.
+## Frontend (Next.js)
+
+### Features
+
+- Clean dashboard for Arkora platform visibility
+- Live API-backed counters for vaults, projects, and templates
+- Semantic search panel connected to backend `/search`
+- Responsive, production-style CSS without framework lock-in
+- Error and loading states for resilient UX
+
+### Frontend Quick Start
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open `http://127.0.0.1:3000`.
+
+### Frontend Environment Configuration
+
+Set the backend API base URL with:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000/api/v1
+```
+
+If omitted, the frontend defaults to `http://127.0.0.1:8000/api/v1`.
+
+---
 
 ## Testing
+
+Backend test:
 
 ```bash
 pytest -q
 ```
 
-The included test validates a realistic flow:
+---
 
-1. Create vault
-2. Create template
-3. Create project
-4. Create content item
-5. Retrieve result through semantic search
-
-## Production Hardening Next Steps
+## Production Hardening Roadmap
 
 - Add authN/authZ (JWT/SSO), RBAC, and audit logs
 - Add migrations (Alembic)
-- Add background indexing workers for large content/attachments
 - Replace lexical search with embeddings + vector index
+- Add background indexing workers for large content/attachments
 - Add observability (structured logging, tracing, metrics)
-- Add CI pipeline and Docker deployment
+- Add Docker + CI pipelines for backend/frontend
